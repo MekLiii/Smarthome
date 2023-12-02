@@ -1,0 +1,30 @@
+﻿[
+  {
+    "DeviceName": "DeviceName",
+    "DeviceId": "example: 1001ee1a8b",
+    "DeviceIp": "ip",
+    "DevicePort": 8081,
+    "Endpoints": {
+      "Info": "endpoint with info",
+      "SwitchBulb": "endpoint with switch",
+      "Dimmable": "endpoint with dimmable"
+    },
+    "DeviceType": "DeviceType",
+    "Room": "RoomName",
+    "RoomId": 1
+  },
+  {
+    "DeviceName": "DeviceName",
+    "DeviceId": "example: 1001ee1a8b", 
+    "DeviceIp": "ip",
+    "DevicePort": 8081,
+    "Endpoints": {
+      "Info": "endpoint with info",
+      "SwitchBulb": "endpoint with switch",
+      "Dimmable": "endpoint with dimmable"
+    },
+    "DeviceType": "DeviceType",
+    "Room": "RoomName",
+    "RoomId": 2
+  }
+]
