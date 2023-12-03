@@ -5,7 +5,7 @@ using Smarthome.Bulbs.Services;
 using Smarthome.Rooms;
 
 var builder = WebApplication.CreateBuilder(args);
-const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 
 builder.Services.AddControllers();
@@ -15,14 +15,10 @@ builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
+    options.AddPolicy(myAllowSpecificOrigins,
         builder =>
         {
-            builder.WithOrigins("http://localhost:3001")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-            
-            builder.WithOrigins("192.168.0.104:3001")
+            builder.WithOrigins("http://localhost:3001","http://192.168.0.104:3000")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
