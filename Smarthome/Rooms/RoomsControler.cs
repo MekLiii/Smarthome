@@ -5,7 +5,7 @@ using Smarthome.Bulbs.interfaces;
 namespace Smarthome.Rooms
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class RoomsController : ControllerBase
     {
         private readonly IRoomsService _roomsService;
