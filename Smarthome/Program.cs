@@ -35,9 +35,14 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 app.UseDefaultFiles(new DefaultFilesOptions { DefaultFileNames = new List<string> { "index.html" } });
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "fe", "assets")),
-    RequestPath = "/assets"
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "fe")),
+    RequestPath = "", 
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=3600");
+    }
 });
+
 
 app.MapGet("/", () =>
     Results.File(
@@ -45,8 +50,6 @@ app.MapGet("/", () =>
         "text/html")
 );
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
