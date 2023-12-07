@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using Smarthome.Bulbs.interfaces;
 using Smarthome.Bulbs.Services;
 using Smarthome.Rooms;
+using ZigBeeNet.PlayGround;
 
 var builder = WebApplication.CreateBuilder(args);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -55,6 +56,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+MqttZigbeeClient client = new();
+client.mqtt("COM7");
 
 app.UseCors(myAllowSpecificOrigins);
 app.UseHttpsRedirection();
