@@ -400,3 +400,4 @@ FodyWeavers.xsd
 Smarthome/httpDevices.json
 Smarthome/rooms.json
 Smarthome/fe
+Smarthome/zigbeeDevices.json
