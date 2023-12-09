@@ -13,13 +13,14 @@ namespace Smarthome.WS
         [HttpGet("connect")]
         public async Task<IActionResult> Connect()
         {
-            if (HttpContext.WebSockets.IsWebSocketRequest)
+            if (HttpContext.WebSockets.IsWebSocketRequest == false)
             {
-                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                await _webSocketService.HandleWebSocket(HttpContext, webSocket);
-                return new EmptyResult();
+                return new StatusCodeResult(StatusCodes.Status400BadRequest);
             }
-            return new StatusCodeResult(StatusCodes.Status400BadRequest);
+            
+            var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            await _webSocketService.HandleWebSocket(HttpContext, webSocket);
+            return new EmptyResult();
         }
     }
 }

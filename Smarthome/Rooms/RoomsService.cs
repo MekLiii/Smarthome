@@ -1,10 +1,17 @@
 ﻿using Newtonsoft.Json;
 using Smarthome.Bulbs.interfaces;
+using Smarthome.WS.interfaces;
 
 namespace Smarthome.Rooms;
 
 public class RoomsService : IRoomsService
 {
+    private readonly IWebSocketService _webSocketService;
+    
+    public RoomsService(IWebSocketService webSocketService)
+    {
+        _webSocketService = webSocketService;
+    }
     private static List<T> LoadRoomsFromJson<T>(string jsonFilePath, bool details = false)
     {
         var json = File.ReadAllText(jsonFilePath);

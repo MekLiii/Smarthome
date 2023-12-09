@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Smarthome.Bulbs.interfaces;
+using Smarthome.WS.interfaces;
 
 
 namespace Smarthome.Rooms
@@ -9,8 +10,13 @@ namespace Smarthome.Rooms
     public class RoomsController : ControllerBase
     {
         private readonly IRoomsService _roomsService;
+        private readonly IWebSocketService _webSocketService;
 
-        public RoomsController(IRoomsService roomsService) => _roomsService = roomsService;
+        public RoomsController(IRoomsService roomsService, IWebSocketService webSocketService)
+        {
+            _roomsService = roomsService;
+            _webSocketService = webSocketService;
+        }
 
         [HttpGet]
         public IActionResult GetRooms()
