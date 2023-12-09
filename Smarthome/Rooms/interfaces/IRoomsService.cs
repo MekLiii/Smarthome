@@ -3,5 +3,5 @@
 public interface IRoomsService
 {
     public List<Room> GetRooms();
-    public Room GetRoomById(int id);
+    public RoomDetails GetRoomById(int id);
 }

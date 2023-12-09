@@ -10,20 +10,19 @@ namespace Smarthome.Rooms
     {
         private readonly IRoomsService _roomsService;
 
-        public RoomsController(IRoomsService bulbsService) => _roomsService = bulbsService;
+        public RoomsController(IRoomsService roomsService) => _roomsService = roomsService;
 
         [HttpGet]
-        public IActionResult GetBulbs()
+        public IActionResult GetRooms()
         {
-            var bulbs = _roomsService.GetRooms();
-            Console.WriteLine("test");
-            return Ok(bulbs);
+            var rooms = _roomsService.GetRooms();
+            return Ok(rooms);
         }
-        [HttpGet("{id}")]
-        public IActionResult GetBulb(int id)
+        [HttpGet("{roomId}")]
+        public IActionResult GetRoomById(int roomId)
         {
-            var bulb = _roomsService.GetRoomById(id);
-            return Ok(bulb);
+            var room = _roomsService.GetRoomById(roomId);
+            return Ok(room);
         }
     }
 }
