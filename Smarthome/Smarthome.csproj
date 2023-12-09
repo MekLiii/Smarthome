@@ -9,12 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
     <PackageReference Include="Mono.TextTemplating" Version="3.0.0-preview-0027-g2711105671" />
     <PackageReference Include="MQTTnet" Version="4.3.2.930" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+    <PackageReference Include="System.Net.WebSockets" Version="4.3.0" />
     <PackageReference Include="ZigbeeNet.Hardware.Ember" Version="1.5.0" />
     <PackageReference Include="ZigBeeNet.Hardware.TI.CC2531" Version="1.5.0" />
     <PackageReference Include="ZigBeeNet.Transport.SerialPort" Version="1.5.0" />
@@ -22,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
-    <Folder Include="services\" />
   </ItemGroup>
 
 </Project>

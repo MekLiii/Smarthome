@@ -2,13 +2,13 @@
 
 public class Room
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public int Id { get; set; }
 }
 
 public class RoomDetails
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public int Id { get; set; }
     public RoomDevices[]? ZigbeeDevices { get; set; }
 }

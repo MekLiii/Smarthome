@@ -5,32 +5,29 @@ using Smarthome.mqtt.interfaces;
 
 namespace Smarthome.mqtt;
 
-public class mqttService : ImqttService
+public class MqttService : IMqttService
 {
-    public IMqttClient MqttClient = factory.CreateMqttClient();
-    private string brokerServer = "192.168.0.104";
-    static MqttFactory factory = new();
-    
+    private static readonly MqttFactory Factory = new();
+    private readonly IMqttClient _mqttClient = Factory.CreateMqttClient();
+    private const string BrokerServer = "192.168.0.104";
+
     public async Task ConnectMqttAsync()
     {
         var options = new MqttClientOptionsBuilder()
-            .WithTcpServer(brokerServer)
+            .WithTcpServer(BrokerServer)
             .Build();
-        await MqttClient.ConnectAsync(options, CancellationToken.None);
+        await _mqttClient.ConnectAsync(options, CancellationToken.None);
         Console.WriteLine("### CONNECTED ###");
     }
-    
+
     public async Task SubscribeTopicAsync(string topic)
     {
-        await MqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+        await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
 
-        MqttClient.ApplicationMessageReceivedAsync += e =>
+        _mqttClient.ApplicationMessageReceivedAsync += e =>
         {
             Console.WriteLine($"Received message: {Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment)}");
             return Task.CompletedTask;
         };
     }
-
-    
-    
 }

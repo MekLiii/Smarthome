@@ -5,7 +5,8 @@ using Smarthome.Bulbs.Services;
 using Smarthome.mqtt;
 using Smarthome.mqtt.interfaces;
 using Smarthome.Rooms;
-
+using Smarthome.WS;
+using Smarthome.WS.interfaces;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
-builder.Services.AddSingleton<ImqttService>(_ => new mqttService());
+builder.Services.AddSingleton<IMqttService>(_ => new MqttService());
+builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 
 builder.Services.AddCors(options =>
 {
@@ -30,6 +32,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UseWebSockets();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,11 +48,8 @@ app.UseDefaultFiles(new DefaultFilesOptions { DefaultFileNames = new List<string
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "fe")),
-    RequestPath = "", 
-    OnPrepareResponse = ctx =>
-    {
-        ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=3600");
-    }
+    RequestPath = "",
+    OnPrepareResponse = ctx => { ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=3600"); }
 });
 
 
@@ -66,9 +66,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
 // app.UseHttpsRedirection();
 var serviceProvider = app.Services;
-var mqttService = serviceProvider.GetRequiredService<ImqttService>();
+var mqttService = serviceProvider.GetRequiredService<IMqttService>();
 await mqttService.ConnectMqttAsync();
 
 app.Run();

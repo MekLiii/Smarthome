@@ -16,8 +16,9 @@ public class RoomsService : IRoomsService
                 throw new Exception("No rooms found");
             return roomDetailsDataList.Cast<T>().ToList();
         }
+
         var roomDataList = JsonConvert.DeserializeObject<List<Room>>(json);
-        if(roomDataList == null)
+        if (roomDataList == null)
             throw new Exception("No room found");
         return roomDataList.Cast<T>().ToList();
     }
@@ -29,7 +30,7 @@ public class RoomsService : IRoomsService
 
     public RoomDetails GetRoomById(int id)
     {
-        var rooms = LoadRoomsFromJson<RoomDetails>("rooms.json",true);
+        var rooms = LoadRoomsFromJson<RoomDetails>("rooms.json", true);
         var room = rooms.FirstOrDefault(room => room.Id == id);
         if (room == null)
         {

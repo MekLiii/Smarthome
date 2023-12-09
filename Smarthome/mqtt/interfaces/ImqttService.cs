@@ -1,6 +1,6 @@
 ﻿namespace Smarthome.mqtt.interfaces;
 
-public interface ImqttService
+public interface IMqttService
 {
     Task ConnectMqttAsync();
 }

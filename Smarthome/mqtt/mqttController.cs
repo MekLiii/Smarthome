@@ -8,11 +8,11 @@ namespace Smarthome.mqtt
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class mqttContoler : ControllerBase
+    public class MqttController : ControllerBase
     {
-        private readonly ImqttService  _imqttService;
+        private readonly IMqttService  _imqttService;
 
-        public mqttContoler(ImqttService mqttService) => _imqttService = mqttService;
+        public MqttController(IMqttService mqttService) => _imqttService = mqttService;
 
         [HttpGet("{topic}")]
         public IActionResult GetThermometer(string topic)
