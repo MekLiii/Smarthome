@@ -1,14 +1,15 @@
-using ZigBeeNet;
-using System;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.FileProviders;
 using Smarthome.Bulbs.interfaces;
 using Smarthome.Bulbs.Services;
+using Smarthome.mqtt;
+using Smarthome.mqtt.interfaces;
 using Smarthome.Rooms;
-using ZigBeeNet.PlayGround;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
-var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 
 builder.Services.AddControllers();
@@ -16,17 +17,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
+builder.Services.AddSingleton<ImqttService>(_ => new mqttService());
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(myAllowSpecificOrigins,
-        builder =>
+        policyOptions =>
         {
-            builder.WithOrigins("http://localhost:3001", "http://192.168.0.104:3000", "http://localhost:5183")
+            policyOptions.WithOrigins("http://localhost:3001", "http://192.168.0.104:3000", "http://localhost:5183")
                 .AllowAnyHeader().AllowAnyMethod();
         });
 });
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
@@ -51,14 +59,6 @@ app.MapGet("/", () =>
         "text/html")
 );
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-MqttZigbeeClient client = new();
-client.mqtt("COM7");
-
 app.UseCors(myAllowSpecificOrigins);
 app.UseHttpsRedirection();
 
@@ -66,7 +66,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseHttpsRedirection();
-
+// app.UseHttpsRedirection();
+var serviceProvider = app.Services;
+var mqttService = serviceProvider.GetRequiredService<ImqttService>();
+await mqttService.ConnectMqttAsync();
 
 app.Run();
