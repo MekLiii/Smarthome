@@ -1,4 +1,4 @@
-﻿namespace Smarthome.Bulbs.interfaces;
+﻿namespace Smarthome.Rooms.interfaces;
 
 public interface IRoomsService
 {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Smarthome.Bulbs.interfaces;
+using Smarthome.Rooms.interfaces;
 using Smarthome.WS.interfaces;
 
 

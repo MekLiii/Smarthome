@@ -1,4 +1,4 @@
-﻿namespace Smarthome.Bulbs.interfaces;
+﻿namespace Smarthome.Rooms.interfaces;
 
 public class Room
 {
@@ -18,5 +18,10 @@ public class RoomDevices
     public string Name { get; set; }
     public string Topic { get; set; }
     public string Id { get; set; }
+    public string Type { get; set; }
+}
+public class RoomTopic
+{
+    public string Topic { get; set; }
     public string Type { get; set; }
 }
