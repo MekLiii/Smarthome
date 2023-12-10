@@ -1,6 +1,13 @@
-﻿namespace Smarthome.mqtt.interfaces;
+﻿using MQTTnet;
+using MQTTnet.Client;
+using Smarthome.WS.interfaces;
+
+namespace Smarthome.mqtt.interfaces;
 
 public interface IMqttService
 {
-    Task ConnectMqttAsync();
+    public Task ConnectMqttAsync();
+    public MqttFactory GetMqttFactory();
+    public IMqttClient GetMqttClient();
+ 
 }

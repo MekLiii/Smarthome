@@ -1,14 +1,19 @@
 ﻿using System.Text;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Protocol;
+using Newtonsoft.Json;
+using Smarthome.Bulbs.interfaces;
 using Smarthome.mqtt.interfaces;
+using Smarthome.Rooms.interfaces;
+using Smarthome.WS.interfaces;
 
 namespace Smarthome.mqtt;
 
 public class MqttService : IMqttService
 {
     private static readonly MqttFactory Factory = new();
-    private readonly IMqttClient _mqttClient = Factory.CreateMqttClient();
+    private readonly IMqttClient MqttClient = Factory.CreateMqttClient();
     private const string BrokerServer = "192.168.0.104";
 
     public async Task ConnectMqttAsync()
@@ -16,18 +21,18 @@ public class MqttService : IMqttService
         var options = new MqttClientOptionsBuilder()
             .WithTcpServer(BrokerServer)
             .Build();
-        await _mqttClient.ConnectAsync(options, CancellationToken.None);
+
+        await MqttClient.ConnectAsync(options, CancellationToken.None);
         Console.WriteLine("### CONNECTED ###");
     }
-
-    public async Task SubscribeTopicAsync(string topic)
+    public MqttFactory GetMqttFactory()
     {
-        await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
-
-        _mqttClient.ApplicationMessageReceivedAsync += e =>
-        {
-            Console.WriteLine($"Received message: {Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment)}");
-            return Task.CompletedTask;
-        };
+        return Factory;
     }
+    public IMqttClient GetMqttClient()
+    {
+        return MqttClient;
+    }
+
+    
 }
