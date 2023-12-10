@@ -5,6 +5,7 @@ using Smarthome.Bulbs.Services;
 using Smarthome.mqtt;
 using Smarthome.mqtt.interfaces;
 using Smarthome.Rooms;
+using Smarthome.Rooms.interfaces;
 using Smarthome.WS;
 using Smarthome.WS.interfaces;
 
@@ -18,8 +19,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
-builder.Services.AddSingleton<IMqttService>(_ => new MqttService());
 builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+ builder.Services.AddSingleton<IMqttService, MqttService>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -66,10 +68,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
-// app.UseHttpsRedirection();
 var serviceProvider = app.Services;
 var mqttService = serviceProvider.GetRequiredService<IMqttService>();
 await mqttService.ConnectMqttAsync();
+
 
 app.Run();
