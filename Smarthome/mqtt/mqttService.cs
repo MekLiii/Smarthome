@@ -13,7 +13,7 @@ namespace Smarthome.mqtt;
 public class MqttService : IMqttService
 {
     private static readonly MqttFactory Factory = new();
-    private readonly IMqttClient MqttClient = Factory.CreateMqttClient();
+    private readonly IMqttClient _mqttClient = Factory.CreateMqttClient();
     private const string BrokerServer = "192.168.0.104";
 
     public async Task ConnectMqttAsync()
@@ -22,7 +22,7 @@ public class MqttService : IMqttService
             .WithTcpServer(BrokerServer)
             .Build();
 
-        await MqttClient.ConnectAsync(options, CancellationToken.None);
+        await _mqttClient.ConnectAsync(options, CancellationToken.None);
         Console.WriteLine("### CONNECTED ###");
     }
     public MqttFactory GetMqttFactory()
@@ -31,8 +31,6 @@ public class MqttService : IMqttService
     }
     public IMqttClient GetMqttClient()
     {
-        return MqttClient;
+        return _mqttClient;
     }
-
-    
 }

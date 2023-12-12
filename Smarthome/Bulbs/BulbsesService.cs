@@ -8,18 +8,21 @@ namespace Smarthome.Bulbs.Services
 {
     public class BulbsService : IBulbsService
     {
-        private readonly HttpClient _httpClient = new();
         private readonly Device[] _httpDevices = LoadDevicesFromJson("httpDevices.json");
+        private readonly HttpClient _httpClient = new();
+       
 
         private static Device[] LoadDevicesFromJson(string jsonFilePath)
         {
-            var json = File.ReadAllText(jsonFilePath); // Assuming you have a JSON file
-            var deviceDataList = JsonConvert.DeserializeObject<List<Device>>(json);
-            if (deviceDataList == null)
+            var json = File.ReadAllText(jsonFilePath);
+            if (json == null)
             {
-                return Array.Empty<Device>();
+                throw new Exception("No devices found");
             }
-
+            
+            
+            var deviceDataList = JsonConvert.DeserializeObject<List<Device>>(json) ?? new List<Device>();
+            
             return deviceDataList.Select(device => new Device
             {
                 DeviceId = device.DeviceId,
@@ -141,7 +144,6 @@ namespace Smarthome.Bulbs.Services
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error making API call for {bulb.DeviceName}: {ex}");
                 throw new Exception($"Error making API call for {bulb.DeviceName}: {ex}");
             }
         }

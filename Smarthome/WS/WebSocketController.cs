@@ -24,7 +24,6 @@ public class WebSocketController : ControllerBase
             }
 
             var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            Console.WriteLine("WebSocket connected");
             await _webSocketService.HandleWebSocket(HttpContext, webSocket);
             
             return new EmptyResult();

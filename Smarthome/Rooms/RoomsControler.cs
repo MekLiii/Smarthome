@@ -10,14 +10,8 @@ namespace Smarthome.Rooms
     public class RoomsController : ControllerBase
     {
         private readonly IRoomsService _roomsService;
-        private readonly IWebSocketService _webSocketService;
-
-        public RoomsController(IRoomsService roomsService, IWebSocketService webSocketService)
-        {
-            _roomsService = roomsService;
-            _webSocketService = webSocketService;
-        }
-
+        public RoomsController(IRoomsService roomsService) => _roomsService = roomsService; 
+        
         [HttpGet]
         public IActionResult GetRooms()
         {

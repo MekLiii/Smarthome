@@ -14,6 +14,7 @@ public class WebSocketService : IWebSocketService
 {
     private WebSocket? _webSocket;
     private int _roomId;
+    private string roomDataListFromJSON = "rooms.json";
 
     private readonly IMqttService _mqttService;
 
@@ -76,7 +77,11 @@ public class WebSocketService : IWebSocketService
 
     private List<RoomTopic> LoadTopicsFromJson()
     {
-        var json = File.ReadAllText("rooms.json");
+        var json = File.ReadAllText(roomDataListFromJSON);
+        if (!File.Exists(json))
+        {
+            throw new FileNotFoundException("Rooms file not found", roomDataListFromJSON);
+        }
 
 
         var roomsDetailsDataList = JsonConvert.DeserializeObject<List<RoomDetails>>(json);
