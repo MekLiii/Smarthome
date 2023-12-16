@@ -24,7 +24,6 @@ namespace Smarthome.Bulbs
         [HttpPost("switch/{bulbId}")]
         public async Task<IActionResult> SwitchBulb([FromBody] IBulbSwitchRequest switchBulbDto, string bulbId)
         {
-            Console.WriteLine(bulbId);
             return Ok(await _bulbsService.SwitchBulb(bulbId, switchBulbDto.SwitchState));
         }
         [HttpPost("dim/{bulbId}")]

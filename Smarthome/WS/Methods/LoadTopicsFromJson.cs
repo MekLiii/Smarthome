@@ -19,7 +19,6 @@ namespace Smarthome.WS.Methods
 
             var roomDataList = roomsDetailsDataList.Find(
                 room => room.Id == roomId);
-            Console.WriteLine(roomDataList);
             if (roomDataList == null)
             {
                 throw new Exception("No room found");

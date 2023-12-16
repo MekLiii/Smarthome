@@ -109,7 +109,6 @@ namespace Smarthome.Bulbs.Services
                         "application/json")
                 }, bulb.DeviceName));
             var result = await Task.WhenAll(tasks);
-
             return result.ToList().Select(bulb => bulb.Data).ToList();
         }
 
@@ -194,7 +193,6 @@ namespace Smarthome.Bulbs.Services
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error making API call for {bulb.DeviceName}: {ex}");
                 throw new Exception($"Error making API call for {bulb.DeviceName}: {ex}");
             }
         }
