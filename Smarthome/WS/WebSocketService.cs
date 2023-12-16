@@ -7,21 +7,21 @@ using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Smarthome.mqtt.interfaces;
 using Smarthome.Rooms.interfaces;
+using Smarthome.WS.Methods;
 
 namespace Smarthome.WS;
 
 public class WebSocketService : IWebSocketService
 {
-    private WebSocket? _webSocket;
+    private static WebSocket? _webSocket;
     private int _roomId;
-    private string roomDataListFromJSON = "rooms.json";
+
 
     private readonly IMqttService _mqttService;
 
     public WebSocketService(IMqttService mqttService)
     {
         _mqttService = mqttService;
-       
     }
 
     public async Task HandleWebSocket(HttpContext context, System.Net.WebSockets.WebSocket webSocket)
@@ -44,16 +44,21 @@ public class WebSocketService : IWebSocketService
                     _roomId = roomId["roomId"];
                     await SubscribeTopicAsync();
                 }
-                SendMessage("Connected to room " + _roomId);
+                SendMessage(new SendMessageDto<int>
+                {
+                    Type = "INFO",
+                    Message = "Connected to room " + _roomId,
+                    Payload = _roomId
+                });
             }
         } while (!result.CloseStatus.HasValue);
 
         await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
     }
 
-    public async void SendMessage(string message)
+    public async void SendMessage<T>(SendMessageDto<T> message)
     {
-        var buffer = Encoding.UTF8.GetBytes(message);
+        var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
         if (_webSocket == null)
         {
             Console.WriteLine("WebSocket is null");
@@ -75,66 +80,47 @@ public class WebSocketService : IWebSocketService
         return _roomId;
     }
 
-    private List<RoomTopic> LoadTopicsFromJson()
-    {
-        var json = File.ReadAllText(roomDataListFromJSON);
-        if (!File.Exists(json))
-        {
-            throw new FileNotFoundException("Rooms file not found", roomDataListFromJSON);
-        }
-
-
-        var roomsDetailsDataList = JsonConvert.DeserializeObject<List<RoomDetails>>(json);
-        if (roomsDetailsDataList == null)
-        {
-            throw new Exception("No room found");
-        }
-
-        var roomDataList = roomsDetailsDataList.Find(
-            room => room.Id == GetRoomId());
-        if (roomDataList == null)
-        {
-            throw new Exception("No topic found");
-        }
-
-        var roomTopics = roomDataList.ZigbeeDevices.Select(device =>
-            new RoomTopic
-            {
-                Topic = device.Topic,
-                Type = device.Type
-            }
-        ).ToList();
-
-
-        if (roomDataList == null)
-            throw new Exception("No rooms found");
-        return roomTopics;
-    }
 
     private async Task SubscribeTopicAsync()
     {
-        var topics = LoadTopicsFromJson();
-
-        var mqttSubscribeOptions = _mqttService.GetMqttFactory().CreateSubscribeOptionsBuilder();
-
-        foreach (var topic in topics)
+        try
         {
-            mqttSubscribeOptions.WithTopicFilter(topic.Topic, MqttQualityOfServiceLevel.ExactlyOnce);
-        }
+            var topics = LoadTopicsFromJson.LoadTopics(_roomId);
 
-        var subscribeOptions = mqttSubscribeOptions.Build();
+            var mqttSubscribeOptions = _mqttService.GetMqttFactory().CreateSubscribeOptionsBuilder();
 
-        await _mqttService.GetMqttClient().SubscribeAsync(subscribeOptions);
-
-        _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += e =>
-        {
-            SendMessage(JsonConvert.SerializeObject(new
+            foreach (var topic in topics)
             {
-                topic = e.ApplicationMessage.Topic,
-                payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment)),
-                type = topics.Find(topic => topic.Topic == e.ApplicationMessage.Topic)?.Type
-            }));
-            return Task.CompletedTask;
-        };
+                mqttSubscribeOptions.WithTopicFilter(topic.Topic, MqttQualityOfServiceLevel.ExactlyOnce);
+            }
+
+            var subscribeOptions = mqttSubscribeOptions.Build();
+
+            await _mqttService.GetMqttClient().SubscribeAsync(subscribeOptions);
+
+
+            _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += e =>
+            {
+                Console.WriteLine(
+                    JsonConvert.DeserializeObject(Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment)));
+                SendMessage(new SendMessageDto<object>
+                {
+                    Type = topics.Find(topic => topic.Topic == e.ApplicationMessage.Topic)?.Type,
+                    Payload = JsonConvert.DeserializeObject(
+                        Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment))
+                });
+                return Task.CompletedTask;
+            };
+        }
+        catch (Exception e)
+        {
+            SendMessage(new SendMessageDto<string>
+            {
+                Type = "Info",
+                Case = CaseEnum.Error,
+                Message = e.Message,
+                Payload = "No room found"
+            });
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.FileProviders;
 using Smarthome.Bulbs.interfaces;
@@ -17,10 +18,11 @@ const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IBulbsService, BulbsService>();
+// builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
 builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
- builder.Services.AddSingleton<IMqttService, MqttService>();
+builder.Services.AddSingleton<IMqttService, MqttService>();
+builder.Services.AddTransient<IBulbsService, BulbsService>();
 
 
 builder.Services.AddCors(options =>
@@ -71,6 +73,10 @@ app.MapControllers();
 var serviceProvider = app.Services;
 var mqttService = serviceProvider.GetRequiredService<IMqttService>();
 await mqttService.ConnectMqttAsync();
+
+
+
+
 
 
 app.Run();

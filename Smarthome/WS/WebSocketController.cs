@@ -31,7 +31,7 @@ public class WebSocketController : ControllerBase
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw new Exception("WebSocket connection failed");
+            return new StatusCodeResult(StatusCodes.Status500InternalServerError); 
         }
     }
 }
