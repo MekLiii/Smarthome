@@ -1,13 +1,9 @@
 ﻿using Smarthome.WS.interfaces;
 using System.Net.WebSockets;
 using System.Text;
-using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Smarthome.Bulbs.interfaces;
 using Smarthome.mqtt.interfaces;
-using Smarthome.Rooms.interfaces;
 using Smarthome.WS.Methods;
 
 namespace Smarthome.WS;
@@ -84,12 +80,6 @@ public class WebSocketService : IWebSocketService
             if (_webSocket == null)
             {
                 Console.WriteLine("WebSocket is null");
-                return;
-            }
-
-            if (_webSocket.State != WebSocketState.Open)
-            {
-                Console.WriteLine("WebSocket is not open");
                 return;
             }
 
