@@ -14,7 +14,7 @@ namespace Smarthome.WS;
 
 public class WebSocketService : IWebSocketService
 {
-    private static WebSocket? _webSocket;
+    private WebSocket? _webSocket;
     private int _roomId;
 
 
@@ -31,32 +31,46 @@ public class WebSocketService : IWebSocketService
     {
         return _roomId;
     }
-    
-    public async Task HandleWebSocket(HttpContext context, System.Net.WebSockets.WebSocket webSocket, int roomId)
+
+    public async Task HandleWebSocket(HttpContext context, System.Net.WebSockets.WebSocket webSocket)
     {
         _webSocket = webSocket;
-        _roomId = roomId;
+
 
         var buffer = new byte[1024 * 4];
         WebSocketReceiveResult result;
-        SendMessage(new SendMessageDto<int>
-        {
-            Type = "INFO",
-            Message = "Connected to room " + _roomId,
-            Payload = _roomId
-        });
-        var bulbsInfo = await _bulbsService.GetBulbsInfo(_roomId);
-        SendMessage(new SendMessageDto<List<IBulbInfoData>>
-        {
-            Type = "Bulbs",
-            Payload = bulbsInfo
-        });
-        var mqttToWs = new MqttToWs(_mqttService, this, _roomId);
-        await mqttToWs.SubscribeTopicAsync();
+
         do
         {
             result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            if (result.MessageType != WebSocketMessageType.Text)
+            {
+                return;
+            }
             
+            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var roomId = JsonConvert.DeserializeObject<Dictionary<string, int>>(message);
+            if (roomId.ContainsKey("roomId"))
+            {
+                Console.WriteLine("RoomId" + roomId["roomId"]);
+                _roomId = roomId["roomId"];
+            }
+
+            var currentRoomId = _roomId;
+            SendMessage(new SendMessageDto<int>
+            {
+                Type = "INFO",
+                Message = "Connected to room " + currentRoomId,
+                Payload = _roomId
+            });
+            var bulbsInfo = await _bulbsService.GetBulbsInfo(currentRoomId);
+            SendMessage(new SendMessageDto<List<IBulbInfoData>>
+            {
+                Type = "Bulbs",
+                Payload = bulbsInfo
+            });
+            var mqttToWs = new MqttToWs(_mqttService, this, currentRoomId);
+            await mqttToWs.SubscribeTopicAsync();
         } while (!result.CloseStatus.HasValue);
 
         await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
@@ -67,25 +81,25 @@ public class WebSocketService : IWebSocketService
         try
         {
             var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
-                    if (_webSocket == null)
-                    {
-                        Console.WriteLine("WebSocket is null");
-                        return;
-                    }
-            
-                    if (_webSocket.State != WebSocketState.Open)
-                    {
-                        Console.WriteLine("WebSocket is not open");
-                        return;
-                    }
-            
-                    await _webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), WebSocketMessageType.Text, true,
-                        CancellationToken.None);
+            if (_webSocket == null)
+            {
+                Console.WriteLine("WebSocket is null");
+                return;
+            }
+
+            if (_webSocket.State != WebSocketState.Open)
+            {
+                Console.WriteLine("WebSocket is not open");
+                return;
+            }
+
+            await _webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), WebSocketMessageType.Text,
+                true,
+                CancellationToken.None);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
     }
-    
 }

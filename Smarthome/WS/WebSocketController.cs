@@ -13,8 +13,8 @@ public class WebSocketController : ControllerBase
     }
 
 
-    [HttpGet("connect/{roomId}")]
-    public async Task<IActionResult> Connect(int roomId)
+    [HttpGet("connect")]
+    public async Task<IActionResult> Connect()
     {
         try
         {
@@ -24,7 +24,7 @@ public class WebSocketController : ControllerBase
             }
 
             var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            await _webSocketService.HandleWebSocket(HttpContext, webSocket, roomId);
+            await _webSocketService.HandleWebSocket(HttpContext, webSocket);
             
             return new EmptyResult();
         }

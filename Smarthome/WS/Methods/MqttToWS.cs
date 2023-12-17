@@ -2,75 +2,81 @@
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Smarthome.mqtt.interfaces;
+using Smarthome.Rooms.interfaces;
 using Smarthome.WS.interfaces;
 
-namespace Smarthome.WS.Methods;
-
-public class MqttToWs
+namespace Smarthome.WS.Methods
 {
-    private readonly IMqttService _mqttService;
-    private readonly IWebSocketService _webSocketService;
-    private readonly int _roomId;
-
-    public MqttToWs(IMqttService mqttService, IWebSocketService webSocketService, int roomId)
+    public class MqttToWs
     {
-        _mqttService = mqttService;
-        _webSocketService = webSocketService;
-        _roomId = roomId;
-    }
+        private readonly IMqttService _mqttService;
+        private readonly IWebSocketService _webSocketService;
+        private static int _roomId;
+        private List<RoomTopic> _currentTopics = new List<RoomTopic>();
 
-    public async Task SubscribeTopicAsync()
-    {
-        try
+        public MqttToWs(IMqttService mqttService, IWebSocketService webSocketService, int roomId)
         {
-            var topics = Topics.GetTopics(_roomId);
-            if (topics.Count == 0)
+            _mqttService = mqttService;
+            _webSocketService = webSocketService;
+            _roomId = roomId;
+        }
+
+        private List<RoomTopic> CurrentTopics
+        {
+            get
             {
-                throw new Exception("No topics found");
+                var topicsInstance = new Topics(_roomId);
+                Console.WriteLine("RoomId topics " + _roomId);
+                _currentTopics = topicsInstance.GetTopics();
+                return _currentTopics;
             }
-            
-
-            var mqttSubscribeOptions = _mqttService.GetMqttFactory().CreateSubscribeOptionsBuilder();
-
-            foreach (var topic in topics)
+        }
+        
+        public async Task SubscribeTopicAsync()
+        {
+            try
             {
-                mqttSubscribeOptions.WithTopicFilter(topic.Topic, MqttQualityOfServiceLevel.ExactlyOnce);
-            }
+                var mqttSubscribeOptions = _mqttService.GetMqttFactory().CreateSubscribeOptionsBuilder();
 
-            var subscribeOptions = mqttSubscribeOptions.Build();
-
-            await _mqttService.GetMqttClient().SubscribeAsync(subscribeOptions);
-
-
-            _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += e =>
-            {
-                var topicEntry = topics.Find(topic => topic.Topic == e.ApplicationMessage.Topic);
-
-                if (topicEntry == null)
+                foreach (var topic in CurrentTopics)
                 {
-                    return Task.CompletedTask;
+                    mqttSubscribeOptions.WithTopicFilter(topic.Topic, MqttQualityOfServiceLevel.ExactlyOnce);
                 }
 
-                _webSocketService.SendMessage(new SendMessageDto<object>
+                var subscribeOptions = mqttSubscribeOptions.Build();
+
+                await _mqttService.GetMqttClient().SubscribeAsync(subscribeOptions);
+                
+                _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += async e =>
                 {
-                    Type = topicEntry.Type,
-                    Payload = JsonConvert.DeserializeObject(
-                        Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment ))
-                });
+      
 
+                    var topicEntry = CurrentTopics.Find(topic => topic.Topic == e.ApplicationMessage.Topic);
+                    
 
-                return Task.CompletedTask;
-            };
-        }
-        catch (Exception e)
-        {
-            _webSocketService.SendMessage(new SendMessageDto<string>
+                    var payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
+                    
+
+                    if (CurrentTopics.Exists(topic => topic.Topic == e.ApplicationMessage.Topic))
+                    {
+                        _webSocketService.SendMessage(new SendMessageDto<object>
+                        {
+                            Type = topicEntry.Type,
+                            Payload = payload
+                        });
+                    }
+                };
+            }
+            catch (Exception e)
             {
-                Type = "Info",
-                Case = CaseEnum.Error,
-                Message = e.Message,
-                Payload = "No room found"
-            });
+                _webSocketService.SendMessage(new SendMessageDto<string>
+                {
+                    Type = "Info",
+                    Case = CaseEnum.Error,
+                    Message = e.Message,
+                    Payload = "No room found"
+                });
+            }
         }
     }
 }
