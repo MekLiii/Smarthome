@@ -18,9 +18,8 @@ const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// builder.Services.AddScoped<IBulbsService, BulbsService>();
 builder.Services.AddScoped<IRoomsService, RoomsService>();
-builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+builder.Services.AddScoped<IWebSocketService, WebSocketService>();
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddTransient<IBulbsService, BulbsService>();
 
