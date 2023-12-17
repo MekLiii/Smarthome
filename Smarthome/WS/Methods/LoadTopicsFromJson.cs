@@ -5,13 +5,9 @@ using Smarthome.Rooms.interfaces;
 class LoadTopicsFromJson
 {
     private const string RoomDataListFromJson = "rooms.json";
-    private int roomId;
-    public LoadTopicsFromJson(int roomId)
-    {
-        this.roomId = roomId;
-    }
+   
 
-    public List<RoomTopic> LoadTopics()
+    public static List<RoomTopic> LoadTopics(int roomId)
     {
         try
         {

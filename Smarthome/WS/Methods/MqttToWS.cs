@@ -12,7 +12,6 @@ namespace Smarthome.WS.Methods
         private readonly IMqttService _mqttService;
         private readonly IWebSocketService _webSocketService;
         private static int _roomId;
-        private List<RoomTopic> _currentTopics = new List<RoomTopic>();
 
         public MqttToWs(IMqttService mqttService, IWebSocketService webSocketService, int roomId)
         {
@@ -21,24 +20,16 @@ namespace Smarthome.WS.Methods
             _roomId = roomId;
         }
 
-        private List<RoomTopic> CurrentTopics
-        {
-            get
-            {
-                var topicsInstance = new Topics(_roomId);
-                Console.WriteLine("RoomId topics " + _roomId);
-                _currentTopics = topicsInstance.GetTopics();
-                return _currentTopics;
-            }
-        }
+       
         
         public async Task SubscribeTopicAsync()
         {
             try
             {
+                var currentTopics = Topics.GetTopics(_roomId);
                 var mqttSubscribeOptions = _mqttService.GetMqttFactory().CreateSubscribeOptionsBuilder();
 
-                foreach (var topic in CurrentTopics)
+                foreach (var topic in currentTopics)
                 {
                     mqttSubscribeOptions.WithTopicFilter(topic.Topic, MqttQualityOfServiceLevel.ExactlyOnce);
                 }
@@ -47,17 +38,17 @@ namespace Smarthome.WS.Methods
 
                 await _mqttService.GetMqttClient().SubscribeAsync(subscribeOptions);
                 
-                _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += async e =>
+                _mqttService.GetMqttClient().ApplicationMessageReceivedAsync += (e) =>
                 {
       
 
-                    var topicEntry = CurrentTopics.Find(topic => topic.Topic == e.ApplicationMessage.Topic);
+                    var topicEntry = currentTopics.Find(topic => topic.Topic == e.ApplicationMessage.Topic);
                     
 
                     var payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
                     
 
-                    if (CurrentTopics.Exists(topic => topic.Topic == e.ApplicationMessage.Topic))
+                    if (currentTopics.Exists(topic => topic.Topic == e.ApplicationMessage.Topic))
                     {
                         _webSocketService.SendMessage(new SendMessageDto<object>
                         {
@@ -65,6 +56,7 @@ namespace Smarthome.WS.Methods
                             Payload = payload
                         });
                     }
+                    return Task.CompletedTask;
                 };
             }
             catch (Exception e)

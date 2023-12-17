@@ -4,18 +4,13 @@ namespace Smarthome.WS.Methods;
 
 public class Topics
 {
-    public int RoomId { get; set; }
-    public Topics(int roomId)
-    {
-        RoomId = roomId;
-    }
-    public List<RoomTopic> GetTopics()
+
+   
+    public static List<RoomTopic> GetTopics(int roomId)
     {
         try
         {
-            Console.WriteLine("RoomId topics" + RoomId);
-            var LoadTopicsFromJson = new LoadTopicsFromJson(RoomId);
-            return LoadTopicsFromJson.LoadTopics();
+            return LoadTopicsFromJson.LoadTopics(roomId);
         }
         catch (Exception e)
         {
