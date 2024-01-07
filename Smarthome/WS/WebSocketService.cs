@@ -27,6 +27,15 @@ public class WebSocketService : IWebSocketService
     {
         return _roomId;
     }
+    // private Dictionary<string, T> getRowFromMessage<T>(string messageKey)
+    // {
+    //     var messageDict = JsonConvert.DeserializeObject<Dictionary<string, T>>(message);
+    //     if (messageDict != null && messageDict.ContainsKey("row"))
+    //     {
+    //         return messageDict[messageKey];
+    //     }
+    //     return null;
+    // }
 
     public async Task HandleWebSocket(HttpContext context, System.Net.WebSockets.WebSocket webSocket)
     {
@@ -43,30 +52,18 @@ public class WebSocketService : IWebSocketService
             {
                 return;
             }
-            
-            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var roomId = JsonConvert.DeserializeObject<Dictionary<string, int>>(message);
-            if (roomId.ContainsKey("roomId"))
+
+            var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var message = JsonConvert.DeserializeObject<WebSocketMessage>(messageString);
+            if (message == null)
             {
-                Console.WriteLine("RoomId" + roomId["roomId"]);
-                _roomId = roomId["roomId"];
+                return;
             }
 
-            var currentRoomId = _roomId;
-            SendMessage(new SendMessageDto<int>
-            {
-                Type = "INFO",
-                Message = "Connected to room " + currentRoomId,
-                Payload = _roomId
-            });
-            var bulbsInfo = await _bulbsService.GetBulbsInfo(currentRoomId);
-            SendMessage(new SendMessageDto<List<IBulbInfoData>>
-            {
-                Type = "Bulbs",
-                Payload = bulbsInfo
-            });
-            var mqttToWs = new MqttToWs(_mqttService, this, currentRoomId);
-            await mqttToWs.SubscribeTopicAsync();
+            var roomId = message.RoomId;
+
+            _roomId = roomId;
+            ProcessMessage(message);
         } while (!result.CloseStatus.HasValue);
 
         await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
@@ -90,6 +87,39 @@ public class WebSocketService : IWebSocketService
         catch (Exception e)
         {
             Console.WriteLine(e);
+        }
+    }
+
+    private async void ProcessMessage(WebSocketMessage message)
+    {
+        Console.WriteLine(message.Action.Type);
+        if (message.Action.Type == "info")
+        {
+            var currentRoomId = _roomId;
+
+            var mqttToWs = new MqttToWs(_mqttService, this, currentRoomId);
+            await mqttToWs.SubscribeTopicAsync();
+
+            SendMessage(new SendMessageDto<int>
+            {
+                Type = "INFO",
+                Message = "Connected to room " + currentRoomId,
+                Payload = _roomId
+            });
+            var bulbsInfo = await _bulbsService.GetBulbsInfo(currentRoomId);
+            SendMessage(new SendMessageDto<List<IBulbInfoData>>
+            {
+                Type = "Bulbs",
+                Payload = bulbsInfo
+            });
+        }
+
+        if (message.Action.Type == "RollerShade")
+        {
+            if (message.Action.Payload == "OPEN")
+            {
+                Console.WriteLine($"Opening roller shade in room {message.RoomId}");
+            }
         }
     }
 }

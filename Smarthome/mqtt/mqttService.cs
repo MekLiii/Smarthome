@@ -33,4 +33,14 @@ public class MqttService : IMqttService
     {
         return _mqttClient;
     }
+    public void Publish(string topic, string payload)
+    {
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(payload)
+            .WithRetainFlag()
+            .Build();
+
+        _mqttClient.PublishAsync(message);
+    }
 }

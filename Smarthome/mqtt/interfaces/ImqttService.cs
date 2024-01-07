@@ -9,5 +9,6 @@ public interface IMqttService
     public Task ConnectMqttAsync();
     public MqttFactory GetMqttFactory();
     public IMqttClient GetMqttClient();
+    public void Publish(string topic, string payload);
  
 }

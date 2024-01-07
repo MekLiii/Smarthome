@@ -5,6 +5,8 @@ using Smarthome.Bulbs.interfaces;
 using Smarthome.Bulbs.Services;
 using Smarthome.mqtt;
 using Smarthome.mqtt.interfaces;
+using Smarthome.RollerShade;
+using Smarthome.RollerShade.interfaces;
 using Smarthome.Rooms;
 using Smarthome.Rooms.interfaces;
 using Smarthome.WS;
@@ -22,6 +24,7 @@ builder.Services.AddScoped<IRoomsService, RoomsService>();
 builder.Services.AddScoped<IWebSocketService, WebSocketService>();
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddTransient<IBulbsService, BulbsService>();
+builder.Services.AddScoped<IRollerShadeService, RollerShadeService>();
 
 
 builder.Services.AddCors(options =>
